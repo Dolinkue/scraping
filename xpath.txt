@@ -1,0 +1,4 @@
+Links = //a[@class="cst_ctn"]/@href
+Titulo = //h1[@class="article-headline"]/text()
+Resumen = //h2[@class="article-subheadline"]/text()
+cuerpo = //div[@class="nd-body-article"]/p[@class="paragraph"]/text()
