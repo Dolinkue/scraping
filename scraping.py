@@ -14,17 +14,10 @@ XPATH_LINK_TO_ARTICLE = '//a[@class="cst_ctn"]/@href'
 XPATH_TITLE = '//h1[@class="article-headline"]/text()'
 XPATH_SUMMARY = '//h2[@class="article-subheadline"]/text()'
 XPATH_BODY = '//div[@class="nd-body-article"]/p[@class="paragraph"]/text()'
+root = 'https://www.infobae.com'
 
 
-def get_title(link):
-    #separamos por "/" y nos quedamos con el ultimo que elemento 
-    url = link.split('/')[-1]
-    #separamos por "-" y eliminamos el ultimo elemento
-    title_list=url.split('-')[:-1]
-    #Unimos lo anterior
-    title = " ".join(title_list)
 
-    return(title)
 
 def parse_notice(link, today):
     try:
@@ -35,7 +28,11 @@ def parse_notice(link, today):
             parsed = html.fromstring(notice)
 
             try:
-                title = get_title(link)  #aca traemos el titulo quiero el indice 0 porqeu el resultado de explicar el xpht nos devuelve una lista con varios elementos entonces queiro el primer elemento 
+                title = parsed.xpath(XPATH_TITLE)[0]
+                print(title)
+                title = title.replace('\"', "") 
+                title = title.replace('?', "") 
+                title = title.replace('¿', "")
                 summary = parsed.xpath(XPATH_SUMMARY)[0]
                 body = parsed.xpath(XPATH_BODY)
             except IndexError: # puede que hay noticias que no tienen summary o algo entonces con esto salgo 
@@ -64,6 +61,7 @@ def parse_home():
             home = response.content.decode('utf-8') # response.content responde el documnto html de la respuesta y decode modifica los caracteres para que no de error
             parsed = html.fromstring(home) #esta lina toma el contenido de html lo transforma en un documento especial para usar xpath  
             links_to_notices = parsed.xpath(XPATH_LINK_TO_ARTICLE) #obtiene una lista de todo el resultadod de aplicar xpath
+            links_to_notices =[root + x for x in links_to_notices]
             #print(len(links_to_notices))
             #print(links_to_notices)
             today = datetime.date.today().strftime('%d-%m-%Y') #te nos trae la fecha today la de hoy, con strftime nos da el formato de como la queremos
@@ -71,7 +69,7 @@ def parse_home():
                 os.mkdir(today)
 
             for link in links_to_notices: # a partit de cada link entro en cada nota y extraigo la info               
-                link = link.join("https://www.infobae.com/")
+                
                 parse_notice(link, today)    
 
         else:
