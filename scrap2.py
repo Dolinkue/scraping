@@ -35,13 +35,13 @@ def parse_notice(link, today):
             parsed = html.fromstring(notice)
 
             try:
-                title = get_title(link)  #aca traemos el titulo quiero el indice 0 porqeu el resultado de explicar el xpht nos devuelve una lista con varios elementos entonces queiro el primer elemento 
+                title = get_title(link)
                 summary = parsed.xpath(XPATH_SUMMARY)[0]
                 body = parsed.xpath(XPATH_BODY)
-            except IndexError: # puede que hay noticias que no tienen summary o algo entonces con esto salgo 
+            except IndexError:
                 print("as")
                 return
-
+            
             with open(f'{today}/{title}.txt', 'w', encoding='utf-8') as f:
                 f.write(title)
                 f.write('\n\n')
@@ -60,19 +60,17 @@ def parse_notice(link, today):
 def parse_home():
     try:
         response = requests.get(HOME_URL)
-        if response.status_code == 200: #para saber el estado de la pagina con .status_code
-            home = response.content.decode('utf-8') # response.content responde el documnto html de la respuesta y decode modifica los caracteres para que no de error
-            parsed = html.fromstring(home) #esta lina toma el contenido de html lo transforma en un documento especial para usar xpath  
-            links_to_notices = parsed.xpath(XPATH_LINK_TO_ARTICLE) #obtiene una lista de todo el resultadod de aplicar xpath
-            #print(len(links_to_notices))
+        if response.status_code == 200:
+            home = response.content.decode('utf-8')
+            parsed = html.fromstring(home)
+            links_to_notices = parsed.xpath(XPATH_LINK_TO_ARTICLE)
             #print(links_to_notices)
-            today = datetime.date.today().strftime('%d-%m-%Y') #te nos trae la fecha today la de hoy, con strftime nos da el formato de como la queremos
-            if not os.path.isdir(today): #estoy preguntando si no exite os.path nos trae un T o F si esta today si no esta la creamos
+            today = datetime.date.today().strftime('%d-%m-%Y')
+            if not os.path.isdir(today):
                 os.mkdir(today)
-
-            for link in links_to_notices: # a partit de cada link entro en cada nota y extraigo la info               
-                link = link.join("https://www.infobae.com/")
-                parse_notice(link, today)    
+            
+            for link in links_to_notices:
+                parse_notice(link, today)
 
         else:
             raise ValueError(f'Error: {response.status_code}')
